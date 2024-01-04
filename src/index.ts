@@ -3,6 +3,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { connect } from 'mongoose'
 import { frontURL } from 'config'
 
 dotenv.config()
@@ -22,4 +23,12 @@ const corsConfig = {
 }
 app.use(cors(corsConfig))
 
-console.log('port', process.env.PORT)
+connect(process.env.MONGO_URL!)
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Server Port: ${process.env.PORT}`)
+    })
+  })
+  .catch((error) => {
+    console.log(`${error} did not connect`)
+  })
