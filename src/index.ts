@@ -1,6 +1,8 @@
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
+import cors from 'cors'
+import { FRONT_URL } from 'config'
 
 const app = express()
 
@@ -10,3 +12,9 @@ app.use(express.urlencoded({ extended: true })) //x-www-form-urlencoded 형태�
 app.use(helmet())
 
 app.use(morgan('dev'))
+
+const corsConfig = {
+  origin: FRONT_URL,
+  credentials: true,
+}
+app.use(cors(corsConfig))
