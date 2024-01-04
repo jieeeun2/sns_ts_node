@@ -4,9 +4,8 @@ import morgan from 'morgan'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { connect } from 'mongoose'
-import { frontURL } from 'config'
+import { frontURL, mongoDBConfig } from 'config'
 import authRoute from 'route/authRoute'
-import { test } from 'controller/authController'
 
 dotenv.config()
 
@@ -25,16 +24,13 @@ const corsConfig = {
 }
 app.use(cors(corsConfig))
 
-connect(process.env.MONGO_URL!)
+const { mongoUrl, port } = mongoDBConfig
+connect(mongoUrl!)
   .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`Server Port: ${process.env.PORT}`)
-    })
+    app.listen(port, () => console.log(`Server Port: ${port}`))
   })
   .catch((error) => {
     console.log(`${error} did not connect`)
   })
 
 app.post('/auth', authRoute)
-
-test().then(() => console.log('생성성공')).catch(err => console.log(err))
