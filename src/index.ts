@@ -5,6 +5,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { connect } from 'mongoose'
 import { frontURL } from 'config'
+import authRoute from 'route/authRoute'
+import { test } from 'controller/authController'
 
 dotenv.config()
 
@@ -32,3 +34,7 @@ connect(process.env.MONGO_URL!)
   .catch((error) => {
     console.log(`${error} did not connect`)
   })
+
+app.post('/auth', authRoute)
+
+test().then(() => console.log('생성성공')).catch(err => console.log(err))
