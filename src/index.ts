@@ -2,7 +2,10 @@ import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import cors from 'cors'
-import { FRONT_URL } from 'config'
+import dotenv from 'dotenv'
+import { frontURL } from 'config'
+
+dotenv.config()
 
 const app = express()
 
@@ -14,7 +17,9 @@ app.use(helmet())
 app.use(morgan('dev'))
 
 const corsConfig = {
-  origin: FRONT_URL,
+  origin: frontURL,
   credentials: true,
 }
 app.use(cors(corsConfig))
+
+console.log('port', process.env.PORT)
