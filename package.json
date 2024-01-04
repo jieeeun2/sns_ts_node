@@ -1,0 +1,11 @@
+{
+  "name": "sns_server",
+  "version": "1.0.0",
+  "description": "이전의 sns프로젝트를 업그레이드 한 작업물입니다.",
+  "main": "index.js",
+  "author": "Jieun Lee",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
