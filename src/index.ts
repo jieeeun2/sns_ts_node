@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { connect } from 'mongoose'
 import { frontURL, mongoDBConfig } from 'config'
 import authRoute from 'route/authRoute'
+import postRoute from 'route/postRoute'
 
 dotenv.config()
 
@@ -33,4 +34,5 @@ connect(mongoUrl!)
     console.log(`${error} did not connect`)
   })
 
-app.post('/auth', authRoute)
+app.use('/auth', authRoute)
+app.use('/post', postRoute)
