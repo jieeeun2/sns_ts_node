@@ -7,6 +7,7 @@ export const register = async (req: Request, res: Response) => {
     const {
       name,
       email,
+      profileImagePath,
       password,
       location,
       occupation
@@ -22,12 +23,12 @@ export const register = async (req: Request, res: Response) => {
       name,
       email,
       password: passwordHash,
-      avatarPath: '', //TODO: 지금은 임시로 공백이 들어가도록 해두었음
+      profileImagePath: profileImagePath || '',
       friends: [],
       location: location || '',
       occupation: occupation || '',
-      viewedProfile: 0,
-      impressions: 0
+      numberOfVisitorsToday: 0,
+      totalNumberOfVisitors: 0,
     })
     await user.save()
     res.status(201).json({ message: '회원가입되었습니다.' })
