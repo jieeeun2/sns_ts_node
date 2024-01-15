@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose'
+import { UTCToKST } from 'util/dateFormatter'
 
 interface UserType {
   name: string
@@ -23,7 +24,9 @@ const UserSchema = new Schema<UserType>({
   viewedProfile: { type: Number },
   impressions: { type: Number },
 }, { 
-  timestamps: true 
+  timestamps: {
+    currentTime: () => UTCToKST(Date.now()),
+  }
 })
 
 const User = model<UserType>('User', UserSchema)
