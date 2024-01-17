@@ -14,3 +14,8 @@ export const awsS3Config = {
   s3AccessKey: process.env.S3_ACCESS_KEY,
   s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 }
+
+export const jwtConfig = {
+  secretKey: process.env.JWT_SECRET_KEY,
+  secretRefreshKey: process.env.JWT_SECRET_REFRESH_KEY,
+}
