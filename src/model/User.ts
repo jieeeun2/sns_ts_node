@@ -26,7 +26,8 @@ const UserSchema = new Schema<UserType>({
 }, { 
   timestamps: {
     currentTime: () => UTCToKST(Date.now()),
-  }
+  },
+  versionKey: false 
 })
 
 const User = model<UserType>('User', UserSchema)

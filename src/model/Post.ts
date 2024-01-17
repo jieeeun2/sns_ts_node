@@ -19,7 +19,8 @@ const CommentSchema = new Schema<CommentType>({
   content: { type: String },
   isDelete: { type: Boolean },
 }, { 
-  timestamps: true 
+  timestamps: true,
+  versionKey: false
 })
 
 const PostSchema = new Schema<PostType>({
@@ -29,7 +30,8 @@ const PostSchema = new Schema<PostType>({
   like: { type: Map, of: Boolean },
   comments: [CommentSchema],
 }, { 
-  timestamps: true 
+  timestamps: true,
+  versionKey: false 
 })
 
 const Post = model<PostType>('Post', PostSchema)
