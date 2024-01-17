@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose'
+import { UTCToKST } from 'util/dateFormatter'
 
 interface CommentType {
   userId: Types.ObjectId
@@ -19,7 +20,9 @@ const CommentSchema = new Schema<CommentType>({
   content: { type: String },
   isDelete: { type: Boolean },
 }, { 
-  timestamps: true,
+  timestamps: {
+    currentTime: () => UTCToKST(Date.now()),
+  },
   versionKey: false
 })
 
@@ -30,7 +33,9 @@ const PostSchema = new Schema<PostType>({
   like: { type: Map, of: Boolean },
   comments: [CommentSchema],
 }, { 
-  timestamps: true,
+  timestamps: {
+    currentTime: () => UTCToKST(Date.now()),
+  },
   versionKey: false 
 })
 
