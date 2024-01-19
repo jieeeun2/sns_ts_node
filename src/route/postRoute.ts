@@ -1,11 +1,12 @@
 import express from 'express'
 import { createComment, createPost, getAllPostList, getCommentList, getPostList, likePost, modifyComment, modifyPost, removeComment, removePost } from 'controller/postController'
+import { upload } from 'middleware/imageUpload'
 
 const router = express.Router()
 
 router.get('/', getAllPostList)
 router.get('/:userId', getPostList)
-router.post('/', createPost)
+router.post('/', upload('postImage').array('images'), createPost)
 router.patch('/:postId', modifyPost)
 router.delete('/:postId', removePost)
 

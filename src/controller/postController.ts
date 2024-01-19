@@ -19,14 +19,17 @@ export const getPostList = async (req: Request, res: Response) => {
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { userId, content, imageFiles } = req.body
-    
+    const { userId, content } = req.body
+
+    const requestFiles = req.files as Express.MulterS3.File[]
+    const imagePaths = requestFiles.map((file) => file.location)
+
     const newPost = new Post({ 
       userId: new Types.ObjectId(userId),
       content, 
-      //imagePaths //TODO: 이미지업로드 미들웨어에서 imageFiles 가공해서 imagePaths넘겨줘야함
+      imagePaths
     })
-    await newPost.save()
+    await newPost.save()  
 
     const populatedPost = await Post
       .findById(newPost._id)
