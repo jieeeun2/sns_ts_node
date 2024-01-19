@@ -10,9 +10,9 @@ interface CommentType {
 interface PostType {
   userId: Types.ObjectId
   content: string
-  imagePaths?: string[]
-  like?: Map<string, boolean>
-  comments?: CommentType[]
+  imagePaths: string[]
+  likes: Map<string, boolean>
+  comments: CommentType[]
 }
 
 const CommentSchema = new Schema<CommentType>({
@@ -30,7 +30,7 @@ const PostSchema = new Schema<PostType>({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   content: { type: String },
   imagePaths: [{ type: String }],
-  like: { type: Map, of: Boolean },
+  likes: { type: Map, of: Boolean, default: new Map<string, boolean>() },
   comments: [CommentSchema],
 }, { 
   timestamps: {
