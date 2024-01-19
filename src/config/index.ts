@@ -10,9 +10,9 @@ export const mongoDBConfig = {
 }
 
 export const awsS3Config = {
-  s3BucketName: process.env.S3_BUCKET_NAME,
-  s3AccessKey: process.env.S3_ACCESS_KEY,
-  s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  bucketName: process.env.S3_BUCKET_NAME,
+  accessKey: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 }
 
 export const jwtConfig = {
