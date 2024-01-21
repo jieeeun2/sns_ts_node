@@ -56,10 +56,8 @@ export const createPost = async (req: Request, res: Response) => {
 
     const responseData = {
       id: postId.toString(),
-      user: {
-        userId: postUserId.toString(),
-        ...restUserData
-      },
+      userId: postUserId.toString(),
+      ...restUserData,
       numberOfLikes,
       numberOfComments,
       ...restData
