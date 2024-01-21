@@ -9,23 +9,22 @@ export const register = async (req: Request, res: Response) => {
     const {
       name,
       email,
-      profileImagePath,
       password,
       location,
       occupation
     } = req.body
 
+    const requestFile = req.file as Express.MulterS3.File
+    const profileImagePath = requestFile.location
+
     const salt =  await bcrypt.genSalt()
     const passwordHash = await bcrypt.hash(password, salt)
-
-    /* TODO: 프론트에서 넘어온 avatar를 
-    백엔드에서 가공을 거쳐서 avatarPath로 변경하는 미들웨어 생성 필요*/
 
     const user = new User({
       name,
       email,
       password: passwordHash,
-      profileImagePath: profileImagePath || '',
+      profileImagePath,
       friends: [],
       location: location || '',
       occupation: occupation || '',
