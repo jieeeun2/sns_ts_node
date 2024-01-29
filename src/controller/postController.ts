@@ -64,13 +64,20 @@ export const createPost = async (req: Request, res: Response) => {
 
 export const getAllPostList = async (req: Request, res: Response) => {
   try {
+    const { currentPage }: { currentPage?: string } = req.query
+    const pageNumber = currentPage ? parseInt(currentPage) : 1
+    const itemsPerPage = 5
+
     const posts = await Post
       .find()
+      .sort({ updatedAt: -1 })
       .populate<{ userId: User }>({
         path: 'userId',
         select: '_id name profileImagePath location'
       })
-    
+      .skip((pageNumber - 1) * itemsPerPage)
+      .limit(itemsPerPage)
+      
     const responseData = posts.map((post) => {
       const { _id: postId, userId: { _id: userId, ...restUserData }, likes, comments, ...restData } = post.toObject()
 
@@ -87,7 +94,9 @@ export const getAllPostList = async (req: Request, res: Response) => {
       }
     })
 
-    res.status(201).json({ message: '게시물 목록이 조회되었습니다.', data: responseData })
+    const hasNextPage = responseData.length === itemsPerPage
+
+    res.status(201).json({ message: '게시물 목록이 조회되었습니다.', data: { posts: responseData, hasNextPage } })
   } catch(err: any) {
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 목록 조회에 실패했습니다. 다시 시도해 주세요.' })
