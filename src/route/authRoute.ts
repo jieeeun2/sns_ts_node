@@ -1,6 +1,6 @@
 import express from 'express'
 import { login, register } from 'controller/authController'
-import { upload } from 'middleware/imageUpload'
+import { upload } from 'middleware/uploadImage'
 
 const router = express.Router()
 

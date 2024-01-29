@@ -1,6 +1,6 @@
 import express from 'express'
 import { createComment, createPost, getAllPostList, getCommentList, getPostList, likePost, modifyComment, modifyPost, removeComment, removePost } from 'controller/postController'
-import { upload } from 'middleware/imageUpload'
+import { upload } from 'middleware/uploadImage'
 
 const router = express.Router()
 
