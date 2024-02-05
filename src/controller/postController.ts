@@ -112,7 +112,15 @@ export const modifyPost = async (req: Request, res: Response) => {
 }
 
 export const removePost = async (req: Request, res: Response) => {
-  
+  try {
+    const { postId } = req.params
+
+    const updatedPost = await Post.findByIdAndDelete(postId)
+    res.status(200).json({ message: '게시물이 삭제되었습니다.', data: updatedPost })
+  } catch(err: any) {
+    console.log({ error: err.message })
+    res.status(404).send({ message: '게시물 삭제에 실패했습니다. 다시 시도해 주세요.' })
+  }
 }
 
 export const getCommentList = async (req: Request, res: Response) => {
