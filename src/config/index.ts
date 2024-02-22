@@ -5,7 +5,7 @@ dotenv.config()
 export const frontURL = 'http://localhost:3000'
 
 export const mongoDBConfig = {
-  mongoUrl: process.env.MONGO_URL,
+  mongoUrl: process.env.MONGO_URI,
   port: process.env.PORT,
 }
 

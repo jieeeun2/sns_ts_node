@@ -1,0 +1,69 @@
+name: Build & Deploy CI/CD
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [ 20 ]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Check node version
+        run: | 
+          node -v
+          npm -v
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Create .env file with Github Repository secrets
+        run: |
+          touch .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "JWT_SECRET_REFRESH_KEY=${{ secrets.JWT_SECRET_REFRESH_KEY }}" >> .env
+          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" >> .env
+          echo "S3_SECRET_ACCESS_KEY=${{ secrets.S3_SECRET_ACCESS_KEY }}" >> .env
+          cat .env
+
+      # AWS 자격 증명 구성 프리셋
+      # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions?version=v2#usage
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2  
+
+      # CodeDeploy 사용한 S3 업로드와 EC2 배포 공식문서
+      # https://docs.aws.amazon.com/ko_kr/codedeploy/latest/userguide/application-revisions-push.html
+
+      - name: Upload to S3 using CodeDeploy
+        run: aws deploy push 
+          --application-name sns-backend-codedeploy 
+          --s3-location s3://sns-backend/build.zip 
+          --source .
+
+      - name: Deploy to EC2 from S3 using CodeDeploy
+        run: aws deploy create-deployment 
+          --application-name sns-backend-codedeploy  
+          --deployment-config-name CodeDeployDefault.AllAtOnce  
+          --deployment-group-name group  
+          --s3-location bucket=sns-backend,key=build.zip,bundleType=zip 
