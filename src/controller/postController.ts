@@ -108,7 +108,23 @@ export const getPostList = async (req: Request, res: Response) => {
 }
 
 export const modifyPost = async (req: Request, res: Response) => {
-  
+  try {
+    const { postId } = req.params
+    const { content } = req.body
+    
+    //upload미들웨어 리턴값인 '추가된 이미지 경로 배열' 
+    const requestFiles = req.files as Express.MulterS3.File[]
+    const addedImagePaths = requestFiles.map((file) => file.location)
+    console.log('addedImagePaths', addedImagePaths)
+
+    //deleteFileFromS3Bucket미들웨어 리턴값인 '삭제된 이미지 경로 배열'
+    console.log('res.locals.deletedImagePaths', res.locals.deletedImagePaths)
+
+    res.status(200).json({ message: '게시물이 수정되었습니다.' })
+  } catch (err: any) {  
+    console.log({ error: err.message })
+    res.status(404).send({ message: '게시물 수정에 실패했습니다. 다시 시도해 주세요.' })
+  }
 }
 
 export const removePost = async (req: Request, res: Response) => {
