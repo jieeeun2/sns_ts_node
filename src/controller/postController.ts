@@ -110,17 +110,63 @@ export const getPostList = async (req: Request, res: Response) => {
 export const modifyPost = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params
-    const { content } = req.body
-    
-    //upload미들웨어 리턴값인 '추가된 이미지 경로 배열' 
+    const { content } = req.body 
+
+    //uploadFileToS3Bucket미들웨어 리턴값인 '추가된 이미지 경로 배열' 
     const requestFiles = req.files as Express.MulterS3.File[]
     const addedImagePaths = requestFiles.map((file) => file.location)
-    console.log('addedImagePaths', addedImagePaths)
 
     //deleteFileFromS3Bucket미들웨어 리턴값인 '삭제된 이미지 경로 배열'
-    console.log('res.locals.deletedImagePaths', res.locals.deletedImagePaths)
+    const deletedImagePaths = res.locals.deletedImagePaths || []
 
-    res.status(200).json({ message: '게시물이 수정되었습니다.' })
+    //post수정시 이미지 추가나 삭제 이전 '기존의 이미지 경로 배열'
+    const existingPost = await Post.findById(postId)
+    const existingImagePaths = existingPost?.imagePaths || []
+
+    //기존의 이미지 경로 배열에 추가와 삭제 적용
+    const updatedImagePaths = existingImagePaths
+      .filter((path) => !deletedImagePaths.includes(path))
+      .concat(addedImagePaths)
+    
+    //db업데이트 및 조회
+    const updatedPost = await Post
+      .findByIdAndUpdate(
+        postId,
+        { content, imagePaths: updatedImagePaths },
+        { new: true }
+      )
+      .populate<{ userId: User }>({
+        path: 'userId',
+        select: '_id name profileImagePath location'
+      })
+
+    if(!updatedPost) return
+    
+    const { 
+      _id, 
+      userId: {
+        _id: userId,
+        ...restUserData
+      },
+      likes,
+      comments,
+      ...restData
+    } = updatedPost.toObject()
+
+    const numberOfLikes = Object.keys(likes).length
+    const numberOfComments = comments.length
+
+    //프론트에서 필요한 형식의 응답데이터
+    const responseData = {
+      id: _id.toString(),
+      userId: userId.toString(),
+      ...restUserData,
+      numberOfLikes,
+      numberOfComments,
+      ...restData
+    }
+
+    res.status(200).json({ message: '게시물이 수정되었습니다.', data: { post: responseData } })
   } catch (err: any) {  
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 수정에 실패했습니다. 다시 시도해 주세요.' })
