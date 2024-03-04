@@ -1,20 +1,20 @@
 import multer from 'multer'
 import multerS3 from 'multer-s3'
 import { S3Client } from '@aws-sdk/client-s3'
-import { awsS3Config } from 'config'
+import { fileUploadAWSConfig } from 'config'
 
-const s3Config = new S3Client({
+const s3Client = new S3Client({
   credentials: {
-    accessKeyId: awsS3Config.accessKey!,
-    secretAccessKey: awsS3Config.secretAccessKey!,
+    accessKeyId: fileUploadAWSConfig.accessKey!,
+    secretAccessKey: fileUploadAWSConfig.secretAccessKey!,
   },
   region: 'ap-northeast-2'
 })
 
-export const upload = (folderName: string) => multer({
+const uploadFileToS3Bucket = (folderName: string) => multer({
   storage: multerS3({
-    s3: s3Config,
-    bucket: awsS3Config.bucketName!,
+    s3: s3Client,
+    bucket: fileUploadAWSConfig.bucketName!,
     metadata: function (req, file, cb) {
       cb(null, {fieldName: file.fieldname})
     },
@@ -29,3 +29,5 @@ export const upload = (folderName: string) => multer({
     }
   })
 })
+
+export default uploadFileToS3Bucket
