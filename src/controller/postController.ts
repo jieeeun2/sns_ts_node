@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import deleteFileFromS3Bucket from 'middleware/deleteFileFromS3Bucket'
 import Post from 'model/Post'
 import { Types } from 'mongoose'
 
@@ -176,6 +177,15 @@ export const modifyPost = async (req: Request, res: Response) => {
 export const removePost = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params
+
+    //s3버킷의 이미지 삭제
+    const existingPost = await Post.findById(postId)
+    const existingImagePaths = existingPost?.imagePaths
+    
+    if(existingImagePaths?.length !== 0) {
+      req.body = { imagePaths: existingImagePaths }
+      await deleteFileFromS3Bucket(req, res, () => {})
+    }
 
     await Post.findByIdAndDelete(postId)
     res.status(200).json({ message: '게시물이 삭제되었습니다.', data: { postId } })
