@@ -26,8 +26,8 @@ const corsConfig = {
 }
 app.use(cors(corsConfig))
 
-const { mongoUrl, port } = mongoDBConfig
-connect(mongoUrl!)
+const { mongoUri, port } = mongoDBConfig
+connect(mongoUri!)
   .then(() => {
     app.listen(port, () => console.log(`Server Port: ${port}`))
   })
