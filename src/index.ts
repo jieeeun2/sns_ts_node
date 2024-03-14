@@ -7,6 +7,7 @@ import { connect } from 'mongoose'
 import { frontURL, mongoDBConfig } from 'config'
 import authRoute from 'route/authRoute'
 import postRoute from 'route/postRoute'
+import searchRoute from 'route/searchRoute'
 
 dotenv.config()
 
@@ -36,3 +37,4 @@ connect(mongoUrl!)
 
 app.use('/auth', authRoute)
 app.use('/post', postRoute)
+app.use('/search', searchRoute)
