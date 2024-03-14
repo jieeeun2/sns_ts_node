@@ -8,6 +8,9 @@ import { frontURL, mongoDBConfig } from 'config'
 import authRoute from 'route/authRoute'
 import postRoute from 'route/postRoute'
 import searchRoute from 'route/searchRoute'
+import User from 'model/User'
+import Post from 'model/Post'
+import { posts, users } from 'mockData'
 
 dotenv.config()
 
@@ -34,6 +37,9 @@ connect(mongoUri!)
   .catch((error) => {
     console.log(`${error} did not connect`)
   })
+
+/* User.insertMany(users)
+Post.insertMany(posts) */
 
 app.use('/auth', authRoute)
 app.use('/post', postRoute)
