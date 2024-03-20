@@ -7,6 +7,7 @@ import { connect } from 'mongoose'
 import { frontURL, mongoDBConfig } from 'config'
 import authRoute from 'route/authRoute'
 import postRoute from 'route/postRoute'
+import userRoute from 'route/userRoute'
 import searchRoute from 'route/searchRoute'
 import User from 'model/User'
 import Post from 'model/Post'
@@ -43,4 +44,5 @@ Post.insertMany(posts) */
 
 app.use('/auth', authRoute)
 app.use('/post', postRoute)
+app.use('/user', userRoute)
 app.use('/search', searchRoute)
