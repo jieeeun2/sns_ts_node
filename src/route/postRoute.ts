@@ -8,12 +8,7 @@ const router = express.Router()
 router.get('/', getAllPostList)
 router.get('/:userId', getPostList)
 router.post('/', uploadFileToS3Bucket('postImage').array('images'), createPost)
-router.patch(
-  '/:postId', 
-  uploadFileToS3Bucket('postImage').array('images'), 
-  deleteFileFromS3Bucket, 
-  modifyPost
-)
+router.patch('/:postId', uploadFileToS3Bucket('postImage').array('images'), deleteFileFromS3Bucket, modifyPost)
 router.delete('/:postId', removePost)
 
 router.get('/:postId/comment', getCommentList)
