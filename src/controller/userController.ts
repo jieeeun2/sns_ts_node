@@ -6,12 +6,25 @@ export const getUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params
 
-    const user = await User.findById(userId)
+    const user = await User
+      .findById(userId, 
+        '_id name profileImagePath friends location occupation numberOfVisitorsToday totalNumberOfVisitors'
+      )
+      .populate('friends', '_id name profileImagePath location')
 
     if(!user) return 
+    
+    const { _id, friends, ...restUserData } = user.toObject()
 
-    const { _id, ...rest } = user.toObject()
-    const responseData = { ...rest, id: _id.toString()}
+    const responseData = friends.map((friend) => {
+      const { _id: friendId, ...restFriendData } = friend
+
+      return { 
+        id: _id.toString(), 
+        friends: { id: friendId.toString(), ...restFriendData }, 
+        ...restUserData
+      }
+    })
     
     res.status(200).json({ message: '사용자 정보가 조회되었습니다.', data: { user: responseData } })
   } catch(err: any) {
