@@ -23,7 +23,13 @@ const CommentSchema = new Schema<CommentType>({
   timestamps: {
     currentTime: () => UTCToKST(Date.now()),
   },
-  versionKey: false
+  versionKey: false,
+  toJSON: { 
+    transform: (doc, ret, options) => { 
+      ret.id = ret._id
+      delete ret._id
+    } 
+  },
 })
 
 const PostSchema = new Schema<PostType>({
@@ -36,7 +42,13 @@ const PostSchema = new Schema<PostType>({
   timestamps: {
     currentTime: () => UTCToKST(Date.now()),
   },
-  versionKey: false 
+  versionKey: false, 
+  toJSON: { 
+    transform: (doc, ret, options) => { 
+      ret.id = ret._id
+      delete ret._id
+    } 
+  },
 })
 
 const Post = model<PostType>('Post', PostSchema)
