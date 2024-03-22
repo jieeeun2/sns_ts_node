@@ -3,13 +3,6 @@ import deleteFileFromS3Bucket from 'middleware/deleteFileFromS3Bucket'
 import Post from 'model/Post'
 import { Types } from 'mongoose'
 
-interface User {
-  _id: Types.ObjectId
-  name: string
-  profileImagePath: string
-  location: string
-}
-
 export const createPost = async (req: Request, res: Response) => {
   try {
     const { userId, content } = req.body
@@ -26,7 +19,7 @@ export const createPost = async (req: Request, res: Response) => {
 
     const populatedPost = await Post
       .findById(newPost._id)
-      .populate<{ userId: User }>({
+      .populate({
         path: 'userId',
         select: '_id name profileImagePath location'
       })
@@ -72,7 +65,7 @@ export const getAllPostList = async (req: Request, res: Response) => {
     const posts = await Post
       .find()
       .sort({ updatedAt: -1 })
-      .populate<{ userId: User }>({
+      .populate({
         path: 'userId',
         select: '_id name profileImagePath location'
       })
@@ -115,7 +108,7 @@ export const getPostList = async (req: Request, res: Response) => {
     const posts = await Post
       .find({ userId })
       .sort({ updatedAt: -1 })
-      .populate<{ userId: User }>({
+      .populate({
         path: 'userId',
         select: '_id name profileImagePath location'
       })
@@ -175,7 +168,7 @@ export const modifyPost = async (req: Request, res: Response) => {
         { content, imagePaths: updatedImagePaths },
         { new: true }
       )
-      .populate<{ userId: User }>({
+      .populate({
         path: 'userId',
         select: '_id name profileImagePath location'
       })
