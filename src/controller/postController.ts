@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
+import { Types } from 'mongoose'
 import deleteFileFromS3Bucket from 'middleware/deleteFileFromS3Bucket'
 import Post from 'model/Post'
-import { Types } from 'mongoose'
 
 export const createPost = async (req: Request, res: Response) => {
   try {
@@ -17,39 +17,35 @@ export const createPost = async (req: Request, res: Response) => {
     })
     await newPost.save()  
 
-    const populatedPost = await Post
-      .findById(newPost._id)
-      .populate({
-        path: 'userId',
-        select: '_id name profileImagePath location'
-      })
-
-    if(!populatedPost) return
-    
-    const { 
-      _id: postId, 
-      userId: {
-        _id: postUserId,
-        ...restUserData
+    const post = await Post.aggregate([
+      { $match: { _id: newPost._id } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
       },
-      likes,
-      comments,
-      ...restData
-    } = populatedPost.toObject()
-
-    const numberOfLikes = Object.keys(likes).length
-    const numberOfComments = comments.length
-
-    const responseData = {
-      id: postId.toString(),
-      userId: postUserId.toString(),
-      ...restUserData,
-      numberOfLikes,
-      numberOfComments,
-      ...restData
-    }
-
-    res.status(201).json({ message: '게시물이 등록되었습니다.', data: responseData })
+      {
+        $project: {
+          _id: 0,
+          id: '$_id', //aggregate를 사용하면 스키마정의에서 toJSON옵션 안먹어서 이렇게
+          userId: '$userId',
+          name: { $arrayElemAt: ['$user.name', 0] },
+          profileImagePath: { $arrayElemAt: ['$user.profileImagePath', 0] },
+          location: { $arrayElemAt: ['$user.location', 0] },
+          content: 1,
+          imagePaths: 1,
+          numberOfLikes: { $size: { $objectToArray: '$likes' } },
+          numberOfComments: { $size: '$comments' },
+          createdAt: 1,
+          updatedAt: 1, 
+        }
+      },
+    ])
+    
+    res.status(201).json({ message: '게시물이 등록되었습니다.', data: post })
   } catch(err: any) {
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 등록에 실패했습니다. 다시 시도해 주세요.' })
@@ -62,35 +58,39 @@ export const getAllPostList = async (req: Request, res: Response) => {
     const pageNumber = currentPage ? parseInt(currentPage) : 1
     const itemsPerPage = 5
 
-    const posts = await Post
-      .find()
-      .sort({ updatedAt: -1 })
-      .populate({
-        path: 'userId',
-        select: '_id name profileImagePath location'
-      })
-      .skip((pageNumber - 1) * itemsPerPage)
-      .limit(itemsPerPage)
-      
-    const responseData = posts.map((post) => {
-      const { _id: postId, userId: { _id: userId, ...restUserData }, likes, comments, ...restData } = post.toObject()
+    const posts = await Post.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          userId: '$userId',
+          name: { $arrayElemAt: ['$user.name', 0] },
+          profileImagePath: { $arrayElemAt: ['$user.profileImagePath', 0] },
+          location: { $arrayElemAt: ['$user.location', 0] },
+          content: 1,
+          imagePaths: 1,
+          numberOfLikes: { $size: { $objectToArray: '$likes' } },
+          numberOfComments: { $size: '$comments' },
+          createdAt: 1,
+          updatedAt: 1, 
+        }
+      },
+      { $sort: { updatedAt: -1 } },
+      { $skip: (pageNumber - 1) * itemsPerPage },
+      { $limit: itemsPerPage }
+    ])
 
-      const numberOfLikes = Object.keys(likes).length
-      const numberOfComments = comments.length
+    const hasNextPage = posts.length === itemsPerPage
 
-      return {
-        id: postId.toString(),
-        userId: userId.toString(),
-        ...restUserData,
-        numberOfLikes,
-        numberOfComments,
-        ...restData
-      }
-    })
-
-    const hasNextPage = responseData.length === itemsPerPage
-
-    res.status(200).json({ message: '게시물 목록이 조회되었습니다.', data: { posts: responseData, hasNextPage } })
+    res.status(200).json({ message: '게시물 목록이 조회되었습니다.', data: { posts, hasNextPage } })
   } catch(err: any) {
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 목록 조회에 실패했습니다. 다시 시도해 주세요.' })
@@ -105,35 +105,40 @@ export const getPostList = async (req: Request, res: Response) => {
     const pageNumber = currentPage ? parseInt(currentPage) : 1
     const itemsPerPage = 5
 
-    const posts = await Post
-      .find({ userId })
-      .sort({ updatedAt: -1 })
-      .populate({
-        path: 'userId',
-        select: '_id name profileImagePath location'
-      })
-      .skip((pageNumber - 1) * itemsPerPage)
-      .limit(itemsPerPage)
-    
-    const responseData = posts.map((post) => {
-      const { _id: postId, userId: { _id: userId, ...restUserData }, likes, comments, ...restData } = post.toObject()
+    const posts = await Post.aggregate([
+      { $match: { userId: new Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          userId: '$userId',
+          name: { $arrayElemAt: ['$user.name', 0] },
+          profileImagePath: { $arrayElemAt: ['$user.profileImagePath', 0] },
+          location: { $arrayElemAt: ['$user.location', 0] },
+          content: 1,
+          imagePaths: 1,
+          numberOfLikes: { $size: { $objectToArray: '$likes' } },
+          numberOfComments: { $size: '$comments' },
+          createdAt: 1,
+          updatedAt: 1, 
+        }
+      },
+      { $sort: { updatedAt: -1 } },
+      { $skip: (pageNumber - 1) * itemsPerPage },
+      { $limit: itemsPerPage }
+    ])
 
-      const numberOfLikes = Object.keys(likes).length
-      const numberOfComments = comments.length
+    const hasNextPage = posts.length === itemsPerPage
 
-      return {
-        id: postId.toString(),
-        userId: userId.toString(),
-        ...restUserData,
-        numberOfLikes,
-        numberOfComments,
-        ...restData
-      }
-    })
-
-    const hasNextPage = responseData.length === itemsPerPage
-
-    res.status(200).json({ message: '사용자 게시물 목록이 조회되었습니다.', data: { posts: responseData, hasNextPage } })
+    res.status(200).json({ message: '사용자 게시물 목록이 조회되었습니다.', data: { posts, hasNextPage } })
   } catch(err: any) {
     console.log({ error: err.message })
     res.status(404).send({ message: '사용자 게시물 목록 조회에 실패했습니다. 다시 시도해 주세요.' })
@@ -162,44 +167,41 @@ export const modifyPost = async (req: Request, res: Response) => {
       .concat(addedImagePaths)
     
     //db업데이트 및 조회
-    const updatedPost = await Post
-      .findByIdAndUpdate(
-        postId,
-        { content, imagePaths: updatedImagePaths },
-        { new: true }
-      )
-      .populate({
-        path: 'userId',
-        select: '_id name profileImagePath location'
-      })
-
-    if(!updatedPost) return
-    
-    const { 
-      _id, 
-      userId: {
-        _id: userId,
-        ...restUserData
+    const post = await Post.aggregate([
+      { $match: { _id: new Types.ObjectId(postId) } },
+      {
+        $set: {
+          content: content,
+          imagePaths: updatedImagePaths
+        }
       },
-      likes,
-      comments,
-      ...restData
-    } = updatedPost.toObject()
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          userId: '$userId',
+          name: { $arrayElemAt: ['$user.name', 0] },
+          profileImagePath: { $arrayElemAt: ['$user.profileImagePath', 0] },
+          location: { $arrayElemAt: ['$user.location', 0] },
+          content: 1,
+          imagePaths: 1,
+          numberOfLikes: { $size: { $objectToArray: '$likes' } },
+          numberOfComments: { $size: '$comments' },
+          createdAt: 1,
+          updatedAt: 1, 
+        }
+      },
+    ])
 
-    const numberOfLikes = Object.keys(likes).length
-    const numberOfComments = comments.length
-
-    //프론트에서 필요한 형식의 응답데이터
-    const responseData = {
-      id: _id.toString(),
-      userId: userId.toString(),
-      ...restUserData,
-      numberOfLikes,
-      numberOfComments,
-      ...restData
-    }
-
-    res.status(200).json({ message: '게시물이 수정되었습니다.', data: { post: responseData } })
+    res.status(200).json({ message: '게시물이 수정되었습니다.', data: { post } })
   } catch (err: any) {  
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 수정에 실패했습니다. 다시 시도해 주세요.' })
