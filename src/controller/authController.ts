@@ -55,22 +55,16 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: '비밀번호가 일치하지 않습니다.' })
     }
 
-    const accessToken = jwt.sign({ id: user._id }, jwtConfig.secretKey!, { expiresIn: '30m' })
-    const refreshToken = jwt.sign({ id: user._id }, jwtConfig.secretRefreshKey!, { expiresIn: '1d' })
+    const accessToken = jwt.sign({ id: user.id }, jwtConfig.secretKey!, { expiresIn: '30m' })
+    const refreshToken = jwt.sign({ id: user.id }, jwtConfig.secretRefreshKey!, { expiresIn: '1d' })
 
     res.cookie('refresh_token', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 })
     
-    const { _id, ...restData } = user.toObject()
-    const responseData = {
-      id: _id?.toString(),
-      ...restData,
-    }
-
     if (isAutoLogin) {
       res.cookie('access_token', accessToken, { httpOnly: true, maxAge: 30 * 60 * 1000 })
-      res.status(200).json({ message: '로그인되었습니다.', data: { user: responseData } })
+      res.status(200).json({ message: '로그인되었습니다.', data: { user } })
     } else {
-      res.status(200).json({ message: '로그인되었습니다.', data: { user: responseData, accessToken } })
+      res.status(200).json({ message: '로그인되었습니다.', data: { user, accessToken } })
     }
   } catch (err: any) {
     console.log({ error: err.message })
