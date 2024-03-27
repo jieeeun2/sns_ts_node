@@ -17,7 +17,7 @@ export const createPost = async (req: Request, res: Response) => {
     })
     await newPost.save()  
 
-    const post = await Post.aggregate([
+    const [post] = await Post.aggregate([
       { $match: { _id: newPost._id } },
       {
         $lookup: {
@@ -45,7 +45,7 @@ export const createPost = async (req: Request, res: Response) => {
       },
     ])
     
-    res.status(201).json({ message: '게시물이 등록되었습니다.', data: post })
+    res.status(201).json({ message: '게시물이 등록되었습니다.', data: { post } })
   } catch(err: any) {
     console.log({ error: err.message })
     res.status(404).send({ message: '게시물 등록에 실패했습니다. 다시 시도해 주세요.' })
@@ -167,7 +167,7 @@ export const modifyPost = async (req: Request, res: Response) => {
       .concat(addedImagePaths)
     
     //db업데이트 및 조회
-    const post = await Post.aggregate([
+    const [post] = await Post.aggregate([
       { $match: { _id: new Types.ObjectId(postId) } },
       {
         $set: {
