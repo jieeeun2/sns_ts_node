@@ -166,15 +166,14 @@ export const modifyPost = async (req: Request, res: Response) => {
       .filter((path) => !deletedImagePaths.includes(path))
       .concat(addedImagePaths)
     
+    if (!existingPost) return
+    existingPost.content = content
+    existingPost.imagePaths = updatedImagePaths
+    await existingPost.save()
+
     //db업데이트 및 조회
     const [post] = await Post.aggregate([
       { $match: { _id: new Types.ObjectId(postId) } },
-      {
-        $set: {
-          content: content,
-          imagePaths: updatedImagePaths
-        }
-      },
       {
         $lookup: {
           from: 'users',
