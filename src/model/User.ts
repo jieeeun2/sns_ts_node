@@ -6,7 +6,8 @@ interface UserType {
   email: string
   password: string
   profileImagePath: string
-  friends: Types.ObjectId[]
+  followers: Types.ObjectId[]
+  followings: Types.ObjectId[]
   location: string
   occupation: string
   numberOfVisitorsToday: number
@@ -18,7 +19,8 @@ const UserSchema = new Schema<UserType>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   profileImagePath: { type: String },
-  friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: Schema.Types.ObjectId, ref: 'User' }], //나를 추가한 친구목록
+  followings: [{ type: Schema.Types.ObjectId, ref: 'User' }], //내가 추가한 친구목록
   location: { type: String },
   occupation: { type: String },
   numberOfVisitorsToday: { type: Number },

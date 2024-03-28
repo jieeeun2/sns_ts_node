@@ -1,9 +1,9 @@
 import express from 'express'
-import { getUser, addRemoveFriend } from 'controller/userController'
+import { getUser, modifyFollowingList } from 'controller/userController'
 
 const router = express.Router()
 
 router.get('/:userId', getUser)
-router.patch("/:userId/:friendId", addRemoveFriend)
+router.patch("/:userId/:targetUserId", modifyFollowingList)
 
 export default router
