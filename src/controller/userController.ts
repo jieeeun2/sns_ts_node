@@ -21,6 +21,28 @@ export const getUser = async (req: Request, res: Response) => {
   }
 }
 
+export const getFollowList = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params
+
+    const user = await User.findById(userId, 'followers followings')
+
+    const followers = await User.find(
+      { _id: { $in: user?.followers } }, 
+      'id name profileImagePath location'
+    )
+    const followings = await User.find(
+      { _id: { $in: user?.followings } }, 
+      'id name profileImagePath location'
+    )
+
+    res.status(200).json({ message: '팔로우 목록이 조회되었습니다.', data: { followers, followings } })
+  } catch(err: any) {
+    console.log({ error: err.message })
+    res.status(404).send({ message: '팔로우 목록 조회에 실패했습니다. 다시 시도해 주세요.' })
+  }
+}
+
 export const modifyFollowingList = async (req: Request, res: Response) => {
   try {
     const { userId, targetUserId } = req.params
