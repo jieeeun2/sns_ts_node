@@ -44,7 +44,10 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password, isAutoLogin } = req.body
 
-    const user = await User.findOne({ email })
+    const user = await User
+      .findOne({ email })
+      .populate('followers', 'id name profileImagePath location')
+      .populate('followings', 'id name profileImagePath location')
 
     if(!user) {
       return res.status(400).json({ message: '존재하지 않는 사용자입니다.' })
